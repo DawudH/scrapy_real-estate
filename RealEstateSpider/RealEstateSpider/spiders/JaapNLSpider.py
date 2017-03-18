@@ -4,6 +4,8 @@ import json
 from scrapy.selector import Selector
 from scrapy_splash import SplashRequest
 from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
+from RealEstateSpider.items import HouseProperties
+from scrapy.exporters import JsonItemExporter
 
 class JaapNLSpider(scrapy.Spider):
     name = 'FundaTest'
@@ -18,31 +20,24 @@ class JaapNLSpider(scrapy.Spider):
 
 
     def parse_response(self, response):
-        print('-'*75)
-        print('-'*75)
-        print()
-        
+               
         page_data = Selector(response=response).xpath('//*[@id="page-data"]/text()').extract()[0]
         page_data = page_data.replace("'", "\"")
         page_data_json = json.loads(page_data)
+       
+        #Fill in HouseProperty object
+        item = HouseProperties(
+                BrokerName = page_data_json['BrokerName'],
+                Price = page_data_json['AdCustomTargets']['price'],
+                BuildYear = page_data_json['AdCustomTargets']['build_year'],
+                Zipcode = page_data_json['AdCustomTargets']['postcode'],                     
+                Street = page_data_json['AdCustomTargets']['prettyStreet'], 
+                City =  page_data_json['AdCustomTargets']['city'],
+                Province = page_data_json['AdCustomTargets']['province'],                      
+                BuildingType = page_data_json['AdCustomTargets']['type'],
+                Geolocation = page_data_json['geoPosition'],
+                propertyID = page_data_json['propertyID'])
         
-        if 'propertyID' in page_data_json.keys():
-            # Now it should be a page containing a property!
-            print(page_data_json['propertyID'])
-            print(page_data_json['AdCustomTargets']['price'])
-
-        
-        links = LxmlLinkExtractor(allow_domains=self.allowed_domains).extract_links(response)
-        for link in links:
-            print(link.url)
-        print('-'*75)
-        print('-'*75)
-
-        item1 = Selector(response=response).css('tr:nth-child(2) .value-3-3').extract()
-        print(item1)
-        
-        #filename = "test.html"
-
-        #with open(filename, 'wb') as f:
-        #    f.write(response.body)
-        #self.log('Saved file %s' % filename)
+        return item
+    
+       

@@ -12,3 +12,15 @@ class FundaspiderItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     pass
+
+class HouseProperties(scrapy.Item):
+    BrokerName = scrapy.Field()
+    Price =  scrapy.Field()
+    BuildYear = scrapy.Field()
+    Zipcode =  scrapy.Field()
+    Street =  scrapy.Field()
+    City =  scrapy.Field()
+    Province =  scrapy.Field()
+    BuildingType  =  scrapy.Field()
+    Geolocation =  scrapy.Field()
+    propertyID = scrapy.Field()
