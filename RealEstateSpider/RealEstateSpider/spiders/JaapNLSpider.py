@@ -25,7 +25,12 @@ class JaapNLSpider(scrapy.Spider):
             print(link.url)
         print('-'*75)
         print('-'*75)
-        filename = 'test.html'
+
+        item1 = Selector(response=response).css('tr:nth-child(2) .value-3-3').extract()
+        print(item1)
+        
+        filename = "test.html"
+
         with open(filename, 'wb') as f:
             f.write(response.body)
         self.log('Saved file %s' % filename)
