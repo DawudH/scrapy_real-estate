@@ -5,7 +5,7 @@ from scrapy_splash import SplashRequest
 from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
 
 class JaapNLSpider(scrapy.Spider):
-    name = "FundaTest"
+    name = 'FundaTest'
     start_urls = ['http://www.jaap.nl/te-koop/zuid+holland/zuidoost-zuid-holland/dordrecht/3311nx/vrieseweg+82/15477297/overzicht?search=/koophuizen/zuid+holland/zuidoost-zuid-holland/dordrecht']
     allowed_domains  = ['www.jaap.nl']
     
@@ -19,12 +19,13 @@ class JaapNLSpider(scrapy.Spider):
     def parse_response(self, response):
         print('-'*75)
         print('-'*75)
-        print(self.allowed_domains)
-        link = LxmlLinkExtractor().extract_links(response)
-        print(link)
+        print()
+        links = LxmlLinkExtractor(allow_domains=self.allowed_domains).extract_links(response)
+        for link in links:
+            print(link.url)
         print('-'*75)
         print('-'*75)
-        filename = "test.html"
+        filename = 'test.html'
         with open(filename, 'wb') as f:
             f.write(response.body)
         self.log('Saved file %s' % filename)
