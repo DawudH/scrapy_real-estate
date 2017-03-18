@@ -13,7 +13,7 @@ class FundaspiderItem(scrapy.Item):
     # name = scrapy.Field()
     pass
 
-class HouseProperties(scrapy.Item):
+class JaapNLSpiderItem(scrapy.Item):
     BrokerName = scrapy.Field()
     Price =  scrapy.Field()
     BuildYear = scrapy.Field()
