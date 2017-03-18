@@ -44,10 +44,9 @@ class JaapNLSpider(scrapy.Spider):
             item.add_value('BuildingType', page_data_json['AdCustomTargets']['type']),
             item.add_value('Geolocation', page_data_json['geoPosition']),
             item.add_value('propertyID', page_data_json['propertyID'])
-            print('-'*75)
-            print(item.get_value('propertyID'))
-            print('-'*75)
-            return item.load_item()
+                       
+            yield item.load_item()
+            
         else:
             # Not a property page
             propertyID = None

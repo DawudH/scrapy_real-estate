@@ -7,6 +7,7 @@
 import json
 import scrapy
 from scrapy.exporters import JsonItemExporter
+from scrapy.exporters import CsvItemExporter
 
 class FundaspiderPipeline(object):
     def process_item(self, item, spider):
@@ -44,8 +45,20 @@ class JsonPipeline(object):
     def process_item(self, item, spider):
         self.exporter.export_item(item)
         return item
-    
-    
+
+class CsvPipeline(object):
+    def __init__(self):
+        self.file = open("booksdata.csv", 'wb')
+        self.exporter = CsvItemExporter(self.file, unicode)
+        self.exporter.start_exporting()
+ 
+    def close_spider(self, spider):
+        self.exporter.finish_exporting()
+        self.file.close()
+ 
+    def process_item(self, item, spider):
+        self.exporter.export_item(item)
+        return item
 #    def process_item(self, item, spider):
 #        print('-'*50)      
 #        scrapy.exporters.JsonItemExporter('test.json').export_item(item)
