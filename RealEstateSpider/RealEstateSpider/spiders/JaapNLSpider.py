@@ -25,13 +25,11 @@ class JaapNLSpider(scrapy.Spider):
         kenmerk = kenmerk.strip()
         kenmerk = re.sub('([^0-9\.])([a-zA-Z]+.*)','',kenmerk) # Remove the m2 or m3 from the string
         kenmerk = re.sub('\.','',kenmerk) # Remove the possible decimal point
-        print(kenmerk)
         if kenmerk == '-':
             # There was no value given..
             kenmerk = None
         else:
             kenmerk = int(kenmerk) # Convert from string to int
-        print(kenmerk)
         return kenmerk
 
     def parse_response(self, response):
