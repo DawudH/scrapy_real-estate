@@ -24,3 +24,7 @@ class JaapNLSpiderItem(scrapy.Item):
     BuildingType  =  scrapy.Field()
     Geolocation =  scrapy.Field()
     propertyID = scrapy.Field()
+    LivingArea = scrapy.Field()
+    LotSize = scrapy.Field()
+    Volume = scrapy.Field()
+
