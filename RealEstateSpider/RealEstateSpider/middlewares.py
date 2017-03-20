@@ -8,7 +8,7 @@
 
 import os
 from scrapy import signals
-from scrapy.dupefilter import RFPDupeFilter
+from scrapy.dupefilters import RFPDupeFilter
 from scrapy.utils.request import request_fingerprint
 
 class FundaspiderSpiderMiddleware(object):

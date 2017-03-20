@@ -1,0 +1,14 @@
+TODO
+
+0. OVERAL COMMENTS BIJ PLAATSEN!!
+1. Price kan soms "Op aanvraag" zijn oid. die moeten eruit.
+2. Meer exlusions in de links to follow.
+3. Plotten opdelen is secties? of smoother maken oid
+4. SQLite database klussen
+	- Datum van genereren opslaan (per entry?)
+5. Pipeline processing beter maken
+	- Zorgen dat er geen lists worden opgraslagen
+	- missende geolocation aanvullen (Google API?)
+	
+
+	

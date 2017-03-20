@@ -36,12 +36,12 @@ bound = 10000 # meters
 p = figure(title="Real estate in the Netherlands", tools=[TOOLS,hover],x_range=(230000, 1000000), width=1400, height=700, toolbar_location="above")
 p.grid.grid_line_color = None
 p.axis.visible = False
-p.circle(x='x', y='y',alpha=0.9, fill_color={'field': 'PriceM2', 'transform': color_mapper}, source=geo_source)
+p.circle(x='x', y='y',alpha=0.7, line_alpha=0, fill_color={'field': 'PriceM2', 'transform': color_mapper}, source=geo_source)
 color_bar = ColorBar(color_mapper=color_mapper,
                      label_standoff=12, border_line_color=None, location=(0,0))
 p.add_layout(color_bar, 'right')
-# p.patches('xs', 'ys', fill_alpha=0.1, fill_color='#333333',
-          # line_color='#000000', line_width=0.5, source=townships_geo_source)
-p.add_tile(tiles['CartoDB Positron'])
+#p.patches('xs', 'ys', fill_alpha=0.01, fill_color='#333333',
+#           line_color='#000000', line_width=0.5, source=townships_geo_source)
+p.add_tile(tiles['Wikipedia'])
 output_file("geojson.html")
 show(p)

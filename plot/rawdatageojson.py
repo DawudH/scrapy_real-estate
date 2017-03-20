@@ -38,7 +38,7 @@ with open('books.json', 'r', encoding='utf-8') as scrapy_data_file:
     # Remove all the duplicates
     print(len(scrapy_data))
     # get the duplicates
-    duplicateID = [scrapy_data.loc[i,'propertyID'] for i, b in enumerate(scrapy_data.duplicated('propertyID')) if b]
+    # duplicateID = [scrapy_data.loc[i,'propertyID'] for i, b in enumerate(scrapy_data.duplicated('propertyID')) if b]
     scrapy_data = scrapy_data.drop_duplicates('propertyID')
     print(len(scrapy_data))
 
@@ -81,6 +81,10 @@ with open('books.json', 'r', encoding='utf-8') as scrapy_data_file:
             # Switch them around!
             lon = row['Geolocation']['Latitude']
             lat = row['Geolocation']['Longitude']
+
+        if lon == 0 and lat == 0:
+            # null-island
+            continue
 
 		# Do the conversion to UTM-WGS84
         x, y = toWebMercator(lon,lat)
