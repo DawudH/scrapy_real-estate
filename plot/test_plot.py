@@ -38,7 +38,7 @@ p = figure(title="Real estate in the Netherlands", tools=TOOLS,x_range=(230000, 
 # Remove the axis
 p.axis.visible = False
 # add a circle to each property with the correct color.
-p.circle(x='x', y='y',alpha=0.7, line_alpha=0, fill_color={'field': 'PriceM2', 'transform': color_mapper}, source=geo_source)
+p.circle(x='x', y='y',alpha=0.9, line_alpha=0, fill_color={'field': 'PriceM2', 'transform': color_mapper}, source=geo_source)
 # Ad a colorbar to the side of the figure
 color_bar = ColorBar(color_mapper=color_mapper,
                      label_standoff=12, border_line_color=None, location=(0,0))
