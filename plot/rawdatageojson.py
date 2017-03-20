@@ -18,7 +18,7 @@ def toWebMercator(lon, lat):
 
 
 # First convert the data to GeoJSON format:
-with open('big_first_run.json', 'r', encoding='utf-8') as scrapy_data_file:
+with open('books.json', 'r', encoding='utf-8') as scrapy_data_file:
 
     scrapy_data = pd.read_json(scrapy_data_file)
     # remove all lists.. this should be done in scrrapy!
@@ -36,8 +36,11 @@ with open('big_first_run.json', 'r', encoding='utf-8') as scrapy_data_file:
     scrapy_data.loc[:,'Zipcode'] = scrapy_data['Zipcode'].apply(lambda x: x[0] if type(x) is list else x)
 
     # Remove all the duplicates
+    print(len(scrapy_data))
+    # get the duplicates
+    duplicateID = [scrapy_data.loc[i,'propertyID'] for i, b in enumerate(scrapy_data.duplicated('propertyID')) if b]
     scrapy_data = scrapy_data.drop_duplicates('propertyID')
-
+    print(len(scrapy_data))
 
     # GeoJSON format is like:
 

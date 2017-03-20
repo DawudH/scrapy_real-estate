@@ -5,8 +5,11 @@
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
-from scrapy import signals
 
+import os
+from scrapy import signals
+from scrapy.dupefilter import RFPDupeFilter
+from scrapy.utils.request import request_fingerprint
 
 class FundaspiderSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -54,3 +57,21 @@ class FundaspiderSpiderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+
+class CustomDupeFilter(RFPDupeFilter):
+# A dupe filter that ignores extensions in the url if exist
+# Copiedand modified from http://stackoverflow.com/questions/12553117/how-to-filter-duplicate-requests-based-on-url-in-scrapy
+
+    def __getid(self, url):
+        mm = url.split("?search=")[0] # Remove the section ?search= amd everything after
+        return mm
+
+    def request_seen(self, request):
+        fp = self.__getid(request.url)
+        if fp in self.fingerprints:
+            return True
+        self.fingerprints.add(fp)
+        if self.file:
+            self.file.write(fp + os.linesep)

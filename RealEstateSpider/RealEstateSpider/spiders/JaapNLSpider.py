@@ -11,6 +11,19 @@ from scrapy.exporters import JsonItemExporter
 
 class JaapNLSpider(scrapy.Spider):
     name = 'JaapNLSpider'
+    #start_urls = ['http://www.jaap.nl/bladeren/koophuizen/drenthe',
+    #              'http://www.jaap.nl/bladeren/koophuizen/flevoland',
+    #              'http://www.jaap.nl/bladeren/koophuizen/friesland',
+    #              'http://www.jaap.nl/bladeren/koophuizen/gelderland',
+    #              'http://www.jaap.nl/bladeren/koophuizen/groningen',
+    #              'http://www.jaap.nl/bladeren/koophuizen/limburg',
+    #              'http://www.jaap.nl/bladeren/koophuizen/noord+brabant',
+    #              'http://www.jaap.nl/bladeren/koophuizen/noord+holland',
+    #              'http://www.jaap.nl/bladeren/koophuizen/overijssel',
+    #              'http://www.jaap.nl/bladeren/koophuizen/utrecht',
+    #              'http://www.jaap.nl/bladeren/koophuizen/zeeland',
+    #              'http://www.jaap.nl/bladeren/koophuizen/zuid+holland',
+    #              ]
     start_urls = ['http://www.jaap.nl/koophuizen/']
     allowed_domains  = ['www.jaap.nl']
     
@@ -71,9 +84,29 @@ class JaapNLSpider(scrapy.Spider):
             # Not a property page
             propertyID = None
 
-        links = LxmlLinkExtractor(deny=['/' + str(propertyID) + '/', '/te-huur/'] ,allow_domains=self.allowed_domains,unique=True).extract_links(response)
+            
+            if Selector(response=response).xpath('//div[@class="property-list"]').extract():
+                # In this case the div property list exist so ONLY extract links from this region
+                restrict_xpaths = '//div[@class="property-list"]'
+            else:
+                restrict_xpaths = ''
 
-        for link in links:
-            url = response.urljoin(link.url)
-            yield scrapy.Request(url=url, callback=self.parse_response)
+            deny = ['/' + str(propertyID) + '/', 
+                    '/te-huur/',
+                    '/huurhuizen/',
+                    '/overjaap',
+                    '/blog',
+                    '/contact',
+                    '/faq',
+                    '/Tarieven',
+                    '/huis-zelf-verhuren']
+            links = LxmlLinkExtractor(deny=deny ,allow_domains=self.allowed_domains,unique=True, restrict_xpaths=restrict_xpaths).extract_links(response)
+            
+            
+
+
+            for link in links:
+                url = response.urljoin(link.url)
+                print(url)
+                yield scrapy.Request(url=url, callback=self.parse_response)
 

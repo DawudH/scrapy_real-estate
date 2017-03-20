@@ -15,7 +15,8 @@ SPIDER_MODULES = ['RealEstateSpider.spiders']
 NEWSPIDER_MODULE = 'RealEstateSpider.spiders'
 
 #SPLASH_URL = 'http://192.168.0.19:8050/'
-#DUPEFILTER_CLASS = 'scrapy_splash.SplashAwareDupeFilter'
+DUPEFILTER_CLASS = 'RealEstateSpider.middlewares.CustomDupeFilter'
+
 #HTTPCACHE_STORAGE = 'scrapy_splash.SplashAwareFSCacheStorage'
 METAREFRESH_ENABLED = True
 METAREFRESH_MAXDELAY = 8
