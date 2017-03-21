@@ -38,7 +38,6 @@ with open('books.json', 'r', encoding='utf-8') as scrapy_data_file:
 
     # Remove all the duplicates
     n_properties = len(scrapy_data)
-    
     scrapy_data = scrapy_data.drop_duplicates('propertyID')
     n_duplicates = n_properties - len(scrapy_data)
     n_properties = len(scrapy_data)

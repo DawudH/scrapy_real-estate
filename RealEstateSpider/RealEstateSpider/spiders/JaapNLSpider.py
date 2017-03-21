@@ -47,8 +47,8 @@ class JaapNLSpider(scrapy.Spider):
         kenmerk = re.sub('([^0-9\.])([a-zA-Z]+.*)','',kenmerk) # Remove the m2 or m3 from the string
         kenmerk = re.sub('\.','',kenmerk) # Remove the possible thousand seperator point
 
-        # It could be that instead of a number a dash is given... handle this.
-        if kenmerk == '-':
+        # It could be that instead of a number a dash is given or nothing at all... handle this.
+        if kenmerk == '-' or kenmerk == '':
             # There was no value given..
             kenmerk = None
         else:
@@ -75,33 +75,42 @@ class JaapNLSpider(scrapy.Spider):
             LotSize = self.extract_numbered_kenmerk(response,'Perceeloppervlakte')
             Volume = self.extract_numbered_kenmerk(response,'Inhoud')
 
-            
-            
-            # Check if the price is an integer (could be "Op aanvraag" or something else)
-            if not isinstance(page_data_json['AdCustomTargets']['price'][0],int):
+            print(page_data_json.keys())
+            # Check if the price is there (could be "Op aanvraag" or something else, in that case the price is not in the json file)
+            if not 'price' in page_data_json['AdCustomTargets'].keys():
                 # So its not just a number!
                 # Ignore this page..
                 return
+
+            # Sometimes the BuildingType does not exist..
+            if not 'type' in page_data_json['AdCustomTargets'].keys():
+                page_data_json['AdCustomTargets']['type'] = 'Unknown'
+
+            # Sometimes the Build year does not exist..
+            if not 'build_year' in page_data_json['AdCustomTargets'].keys():
+                page_data_json['AdCustomTargets']['build_year'] = 0
 
             # Create an item
             item = ItemLoader(item = JaapNLSpiderItem(), response = response)
 
 
-            # The extracted values are all lists, only extract the frst value (normally they only should have 1 value anyway..)
-            item.add_value('BrokerName',page_data_json['BrokerName'][0]),
-            item.add_value('Price', int(page_data_json['AdCustomTargets']['price'][0])), # Convert to int.. is string
-            item.add_value('BuildYear', int(page_data_json['AdCustomTargets']['build_year'][0])), # Convert to int.. is string
-            item.add_value('Zipcode' , page_data_json['AdCustomTargets']['postcode'][0]),                     
-            item.add_value('Street', page_data_json['AdCustomTargets']['prettyStreet'][0]), 
-            item.add_value('City',  page_data_json['AdCustomTargets']['city'][0]),
-            item.add_value('Province', page_data_json['AdCustomTargets']['province'][0]),                      
-            item.add_value('BuildingType', page_data_json['AdCustomTargets']['type'][0]),
-            item.add_value('Geolocation', page_data_json['geoPosition'][0]),
-            item.add_value('propertyID', page_data_json['propertyID'][0])
+            # Add all the values to the list
+            item.add_value('BrokerName',page_data_json['BrokerName']),
+            item.add_value('Price', int(page_data_json['AdCustomTargets']['price'])), # Convert to int.. is string
+            item.add_value('BuildYear', int(page_data_json['AdCustomTargets']['build_year'])), # Convert to int.. is string
+            item.add_value('Zipcode' , page_data_json['AdCustomTargets']['postcode']),                     
+            item.add_value('Street', page_data_json['AdCustomTargets']['prettyStreet']), 
+            item.add_value('City',  page_data_json['AdCustomTargets']['city']),
+            item.add_value('Province', page_data_json['AdCustomTargets']['province']),                      
+            item.add_value('BuildingType', page_data_json['AdCustomTargets']['type']),
+            item.add_value('Geolocation', page_data_json['geoPosition']),
+            item.add_value('propertyID', page_data_json['propertyID'])
             
-            item.add_value('LivingArea',LivingArea[0])
-            item.add_value('LotSize',LotSize[0])
-            item.add_value('Volume',Volume[0])
+            item.add_value('LivingArea',LivingArea)
+            item.add_value('LotSize',LotSize)
+            item.add_value('Volume',Volume)
+
+            
                        
             yield item.load_item()
             
@@ -127,7 +136,7 @@ class JaapNLSpider(scrapy.Spider):
                     '/Tarieven',
                     '/huis-zelf-verhuren',
                     '/hypotheek',
-                    'huis-zelf-verkopen'
+                    '/huis-zelf-verkopen'
                     '/Content',
                     '/privacy',
                     '/disclaimer',
