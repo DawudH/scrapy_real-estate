@@ -96,3 +96,4 @@ ENV/
 # Visual studio
 .sln
 .pyproj
+.vs/
