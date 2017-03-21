@@ -34,7 +34,7 @@ class JaapNLSpiderPipeline(object):
     
 class JsonPipeline(object):
     def __init__(self):
-        self.file = open("books.json", 'wb')
+        self.file = open("run_dennis_goeie.json", 'wb')
         self.exporter = JsonItemExporter(self.file, encoding='utf-8', ensure_ascii=False)
         self.exporter.start_exporting()
  

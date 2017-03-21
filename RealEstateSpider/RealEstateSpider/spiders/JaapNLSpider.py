@@ -107,6 +107,5 @@ class JaapNLSpider(scrapy.Spider):
 
             for link in links:
                 url = response.urljoin(link.url)
-                print(url)
                 yield scrapy.Request(url=url, callback=self.parse_response)
 
