@@ -36,7 +36,7 @@ with open('big_run_2_102147.json', 'r', encoding='utf-8') as scrapy_data_file:
     scrapy_data.loc[:,'Street'] = scrapy_data['Street'].apply(lambda x: x[0] if type(x) is list else x)
     scrapy_data.loc[:,'Zipcode'] = scrapy_data['Zipcode'].apply(lambda x: x[0] if type(x) is list else x)
 
-    # Remove all the duplicates
+    # Remove all the duplicates 
     n_properties = len(scrapy_data)
     scrapy_data = scrapy_data.drop_duplicates('propertyID')
     n_duplicates = n_properties - len(scrapy_data)

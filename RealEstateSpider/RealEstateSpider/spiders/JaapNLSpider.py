@@ -148,6 +148,7 @@ class JaapNLSpider(scrapy.Spider):
             for link in links:
                 # add it to the response or so?? dont know why but every example has it..
                 url = response.urljoin(link.url)
+                
                 # And call this function again for each link found!
                 yield scrapy.Request(url=url, callback=self.parse_response)
 
