@@ -62,7 +62,7 @@ class FundaspiderSpiderMiddleware(object):
 
 class CustomDupeFilter(RFPDupeFilter):
 # A dupe filter that ignores extensions in the url if exist
-# Copiedand modified from http://stackoverflow.com/questions/12553117/how-to-filter-duplicate-requests-based-on-url-in-scrapy
+# Copied and modified from http://stackoverflow.com/questions/12553117/how-to-filter-duplicate-requests-based-on-url-in-scrapy
 
     def __getid(self, url):
         mm = url.split("?search=")[0] # Remove the section ?search= amd everything after
