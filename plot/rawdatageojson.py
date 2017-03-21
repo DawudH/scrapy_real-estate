@@ -19,7 +19,7 @@ def toWebMercator(lon, lat):
 
 
 # First convert the data to GeoJSON format:
-with open('books.json', 'r', encoding='utf-8') as scrapy_data_file:
+with open('big_run_2_102147.json', 'r', encoding='utf-8') as scrapy_data_file:
 
     scrapy_data = pd.read_json(scrapy_data_file)
     # remove all lists.. this should be done in scrrapy!
@@ -66,6 +66,7 @@ with open('books.json', 'r', encoding='utf-8') as scrapy_data_file:
     geoJSON = '{\n\t "type": "FeatureCollection",\n\t "features": [\n'
 
     # Loop over the pandas dataframe
+    count_extracted_properties = 0
     for index, row in scrapy_data.iterrows():
 
         if not isinstance(row['Geolocation'],dict):
@@ -92,6 +93,10 @@ with open('books.json', 'r', encoding='utf-8') as scrapy_data_file:
 		# Do the conversion to UTM-WGS84
         x, y = toWebMercator(lon,lat)
 
+        # Sometimes the Living area is not provided or is zero.. drop the item then
+        if np.isnan(row['LivingArea']) or row['LivingArea'] == 0:
+            continue
+
         # sometimes te lotSize is not given and thus converted to 0.. its probably because the lotsize is the LivingArea
         if np.isnan(row['LotSize']):
             row['LotSize'] = row['LivingArea']
@@ -111,10 +116,17 @@ with open('books.json', 'r', encoding='utf-8') as scrapy_data_file:
                      ',\n\t\t\t\t"Zipcode": "' + row['Zipcode'] + '"' + \
                      ' \n\t\t\t } \n\t\t }, \n'
 
+        # count the number of extracted properties
+        count_extracted_properties += 1
+
     # Close it
     # First replace the last ', \n' with ' \n'
     geoJSON = geoJSON[:-3] + ' \n'
     geoJSON += '\t]\n}'
+
+    # print some info
+    print('Number of invalid properties: {}'.format(n_properties - count_extracted_properties))
+    print('Total properties extracted: {}'.format(count_extracted_properties))
 
     with open('properties.geojson', 'w') as output_file:
         output_file.write(geoJSON)

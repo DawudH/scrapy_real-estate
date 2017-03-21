@@ -75,7 +75,6 @@ class JaapNLSpider(scrapy.Spider):
             LotSize = self.extract_numbered_kenmerk(response,'Perceeloppervlakte')
             Volume = self.extract_numbered_kenmerk(response,'Inhoud')
 
-            print(page_data_json.keys())
             # Check if the price is there (could be "Op aanvraag" or something else, in that case the price is not in the json file)
             if not 'price' in page_data_json['AdCustomTargets'].keys():
                 # So its not just a number!
