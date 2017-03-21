@@ -3,6 +3,7 @@ import math
 import numpy as np
 import geojson
 import re
+from print_progressbar import print_progress
 
 # The coordinates need to be converted to web mercator format create a function to do that.
 # From http://wiki.openstreetmap.org/wiki/Mercator#Python
@@ -67,7 +68,11 @@ with open('big_run_2_102147.json', 'r', encoding='utf-8') as scrapy_data_file:
 
     # Loop over the pandas dataframe
     count_extracted_properties = 0
+    total_properties = len(scrapy_data)
     for index, row in scrapy_data.iterrows():
+
+        # Print the progress
+        print_progress(index, total_properties, prefix = 'Converting to geojson: ', suffix = '', decimals = 1, barLength = 100)
 
         if not isinstance(row['Geolocation'],dict):
             # There is no geoinfo
@@ -109,7 +114,7 @@ with open('big_run_2_102147.json', 'r', encoding='utf-8') as scrapy_data_file:
                      ',\n\t\t\t\t"PriceM2": ' + str(int(row['Price']/row['LivingArea'])) + \
                      ',\n\t\t\t\t"LivingArea": ' + str(row['LivingArea']) + \
                      ',\n\t\t\t\t"LotSize": ' + str(row['LotSize']) + \
-                     ',\n\t\t\t\t"Street": "' + row['Street'] + '"' +\
+                     ',\n\t\t\t\t"Street": "' + row['Street'].replace('\"',"'") + '"' +\
                      ',\n\t\t\t\t"BuildingType": "' + row['BuildingType'] + '"' + \
                      ',\n\t\t\t\t"BuildYear": ' + str(row['BuildYear']) + \
                      ',\n\t\t\t\t"City": "' + row['City'].replace('\\u0027','\u0027').title() + '"' + \

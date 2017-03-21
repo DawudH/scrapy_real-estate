@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{86c402f4-81fb-4f68-b54f-ef7ec3614315}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>rawdatageojson.py</StartupFile>
+    <StartupFile>test_plot.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
