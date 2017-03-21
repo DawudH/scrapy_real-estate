@@ -19,7 +19,7 @@ def toWebMercator(lon, lat):
 
 
 # First convert the data to GeoJSON format:
-with open('big_run_2_102147.json', 'r', encoding='utf-8') as scrapy_data_file:
+with open('run_dennis_groot.json', 'r', encoding='utf-8') as scrapy_data_file:
 
     scrapy_data = pd.read_json(scrapy_data_file)
     # remove all lists.. this should be done in scrrapy!
