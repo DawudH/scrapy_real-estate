@@ -1,26 +1,15 @@
+import settings
 import pandas as pd
-import math
 import numpy as np
 import geojson
 import re
+import os
 from print_progressbar import print_progress
-
-# The coordinates need to be converted to web mercator format create a function to do that.
-# From http://wiki.openstreetmap.org/wiki/Mercator#Python
-def toWebMercator(lon, lat):
-
-	r_major=6378137.000
-
-	# Spherical earth
-	y = r_major/2 * math.log((1.0 + math.sin(math.radians(lat))) / (1.0 - math.sin(math.radians(lat))))
-	x = r_major * lon * math.pi/180
-
-
-	return [x, y]
+from geoconversions.LatLonConversions import LatLon2WebMercator
 
 
 # First convert the data to GeoJSON format:
-with open('big_run_2_102147.json', 'r', encoding='utf-8') as scrapy_data_file:
+with open(os.path.join(settings.DATAFOLDER, settings.RAW_DATA_FILENAME), 'r', encoding='utf-8') as scrapy_data_file:
 
     scrapy_data = pd.read_json(scrapy_data_file)
     # remove all lists.. this should be done in scrrapy!
@@ -72,7 +61,7 @@ with open('big_run_2_102147.json', 'r', encoding='utf-8') as scrapy_data_file:
     for index, row in scrapy_data.iterrows():
 
         # Print the progress
-        print_progress(index, total_properties, prefix = 'Converting to geojson: ', suffix = '', decimals = 1, barLength = 100)
+        print_progress(index, total_properties, prefix = 'Converting to geojson: ', suffix = ' {} properties converted'.format(index+1), decimals = 1, barLength = 25)
 
         if not isinstance(row['Geolocation'],dict):
             # There is no geoinfo
@@ -96,7 +85,7 @@ with open('big_run_2_102147.json', 'r', encoding='utf-8') as scrapy_data_file:
             continue
 
 		# Do the conversion to UTM-WGS84
-        x, y = toWebMercator(lon,lat)
+        x, y = LatLon2WebMercator(lat,lon)
 
         # Sometimes the Living area is not provided or is zero.. drop the item then
         if np.isnan(row['LivingArea']) or row['LivingArea'] == 0:
@@ -130,8 +119,8 @@ with open('big_run_2_102147.json', 'r', encoding='utf-8') as scrapy_data_file:
     geoJSON += '\t]\n}'
 
     # print some info
-    print('Number of invalid properties: {}'.format(n_properties - count_extracted_properties))
+    print('\nNumber of invalid properties: {}'.format(n_properties - count_extracted_properties))
     print('Total properties extracted: {}'.format(count_extracted_properties))
 
-    with open('properties.geojson', 'w') as output_file:
+    with open(os.path.join(settings.DATAFOLDER, settings.GEOJSON_FILENAME), 'w') as output_file:
         output_file.write(geoJSON)
