@@ -1,26 +1,17 @@
+# -*- coding: utf-8 -*-
+import settings
 import pandas as pd
-import math
 import numpy as np
-import geojson
+import json
 import re
+import os
+from time import time
 from print_progressbar import print_progress
-
-# The coordinates need to be converted to web mercator format create a function to do that.
-# From http://wiki.openstreetmap.org/wiki/Mercator#Python
-def toWebMercator(lon, lat):
-
-	r_major=6378137.000
-
-	# Spherical earth
-	y = r_major/2 * math.log((1.0 + math.sin(math.radians(lat))) / (1.0 - math.sin(math.radians(lat))))
-	x = r_major * lon * math.pi/180
-
-
-	return [x, y]
+from geoconversions.LatLonConversions import LatLon2WebMercator
 
 
 # First convert the data to GeoJSON format:
-with open('run_dennis_groot.json', 'r', encoding='utf-8') as scrapy_data_file:
+with open(os.path.join(settings.DATAFOLDER, settings.RAW_DATA_FILENAME), 'r', encoding='utf-8') as scrapy_data_file:
 
     scrapy_data = pd.read_json(scrapy_data_file)
     # remove all lists.. this should be done in scrrapy!
@@ -64,15 +55,35 @@ with open('run_dennis_groot.json', 'r', encoding='utf-8') as scrapy_data_file:
     # For more info see: https://tools.ietf.org/html/rfc7946
 
     # start with the header
-    geoJSON = '{\n\t "type": "FeatureCollection",\n\t "features": [\n'
+    geoJSON = '{ "type": "FeatureCollection", "features": ['
+
+    # While looping over the data, also the data can be averaged per zipcode!
+    # Store this in a dict
+    zipcode_data = {}
+    # It will be of format:
+
+    #   {
+    #       "1234": {                               <-- The 4 digit zipcode is the key of this entry
+    #                   "n_properties": 123         <-- number of properties that this data is based on
+    #                   "data_1": value             <-- All the averaged values will come here
+    #               },
+    #       /* More zipcodes here */
+    #   }
 
     # Loop over the pandas dataframe
     count_extracted_properties = 0
     total_properties = len(scrapy_data)
+    # Keep track of time
+    start = time()
     for index, row in scrapy_data.iterrows():
 
         # Print the progress
-        print_progress(index, total_properties, prefix = 'Converting to geojson: ', suffix = '', decimals = 1, barLength = 100)
+        if count_extracted_properties > 1:
+            remaining_time = (time() - start) / (count_extracted_properties) * total_properties - (time() - start)
+            hours_remaining = int(remaining_time // 3600)
+            minutes_remaining = int((remaining_time - hours_remaining*3600) // 60)
+            seconds_remaining = int(remaining_time - minutes_remaining*60 - hours_remaining*3600)
+            print_progress(index, total_properties, prefix = 'Converting to geojson: ', suffix = ' Time remaining: {:02d}:{:02d}:{:02d}'.format(hours_remaining,minutes_remaining,seconds_remaining), decimals = 1, barLength = 25)
 
         if not isinstance(row['Geolocation'],dict):
             # There is no geoinfo
@@ -96,7 +107,7 @@ with open('run_dennis_groot.json', 'r', encoding='utf-8') as scrapy_data_file:
             continue
 
 		# Do the conversion to UTM-WGS84
-        x, y = toWebMercator(lon,lat)
+        x, y = LatLon2WebMercator(lat,lon)
 
         # Sometimes the Living area is not provided or is zero.. drop the item then
         if np.isnan(row['LivingArea']) or row['LivingArea'] == 0:
@@ -106,32 +117,71 @@ with open('run_dennis_groot.json', 'r', encoding='utf-8') as scrapy_data_file:
         if np.isnan(row['LotSize']):
             row['LotSize'] = row['LivingArea']
 
+        # Sometimes the zipcode cannot really be a zipcode.. (row['Zipcode'] == 'Nicola') :/
+        if not bool(re.match('^[0-9]{4}[a-zA-Z]{2}$',row['Zipcode'])):
+            # Its not a zipcode!
+            continue
+
 
         # Add a feature (For the coordinates definition see: http://www.macwright.org/2015/03/23/geojson-second-bite.html )
-        geoJSON += '\t\t {\n\t\t\t "type": "Feature", \n\t\t\t "geometry": { \n\t\t\t\t "type": "Point", \n\t\t\t\t "coordinates": [' + str(x) + ', ' + str(y) + '] \n\t\t\t }, \n\t\t\t "properties": { \n\t\t\t\t' + \
+        geoJSON += ' { "type": "Feature",  "geometry": {  "type": "Point",  "coordinates": [' + str(x) + ', ' + str(y) + ']  },  "properties": { ' + \
                      '"Price": ' + str(row['Price']) + \
-                     ',\n\t\t\t\t"PPrice": "€{:,}"'.format(row['Price']) + \
-                     ',\n\t\t\t\t"PriceM2": ' + str(int(row['Price']/row['LivingArea'])) + \
-                     ',\n\t\t\t\t"LivingArea": ' + str(row['LivingArea']) + \
-                     ',\n\t\t\t\t"LotSize": ' + str(row['LotSize']) + \
-                     ',\n\t\t\t\t"Street": "' + row['Street'].replace('\"',"'") + '"' +\
-                     ',\n\t\t\t\t"BuildingType": "' + row['BuildingType'] + '"' + \
-                     ',\n\t\t\t\t"BuildYear": ' + str(row['BuildYear']) + \
-                     ',\n\t\t\t\t"City": "' + row['City'].replace('\\u0027','\u0027').title() + '"' + \
-                     ',\n\t\t\t\t"Zipcode": "' + row['Zipcode'] + '"' + \
-                     ' \n\t\t\t } \n\t\t }, \n'
+                     ',"PPrice": "€{:,}"'.format(row['Price']) + \
+                     ',"PriceM2": ' + str(int(row['Price']/row['LivingArea'])) + \
+                     ',"LivingArea": ' + str(row['LivingArea']) + \
+                     ',"LotSize": ' + str(row['LotSize']) + \
+                     ',"Street": "' + row['Street'].replace('\"',"'") + '"' +\
+                     ',"BuildingType": "' + row['BuildingType'] + '"' + \
+                     ',"BuildYear": ' + str(row['BuildYear']) + \
+                     ',"City": "' + row['City'].replace('\\u0027','\u0027').title() + '"' + \
+                     ',"Zipcode": "' + row['Zipcode'].upper() + '"' + \
+                     '  }  }, '
 
+        # Add it to the zipcode data dict:
+        zipcode = int(row['Zipcode'][:-2])
+        if zipcode not in zipcode_data.keys():
+            # There is no entry of this zipcode yet..
+            zipcode_data[zipcode] =  {'n_properties': 1, 
+                                      'Price': row['Price'], 
+                                      'LivingArea': row['LivingArea'],
+                                      'LotSize': row['LotSize'],
+                                      'BuildYear': row['BuildYear'],
+                                      }
+        else: 
+            # There is already a zipcode in the keys..
+            # Add the new parameters will be averaged afterwards
+            zipcode_data[zipcode]['Price'] +=  row['Price']
+            zipcode_data[zipcode]['LivingArea'] += row['LivingArea']
+            zipcode_data[zipcode]['LotSize'] += row['LotSize']
+            zipcode_data[zipcode]['BuildYear'] += row['BuildYear']
+            zipcode_data[zipcode]['n_properties'] += 1
+            
         # count the number of extracted properties
         count_extracted_properties += 1
 
     # Close it
-    # First replace the last ', \n' with ' \n'
-    geoJSON = geoJSON[:-3] + ' \n'
-    geoJSON += '\t]\n}'
+    # First replace the last ', ' with ' '
+    geoJSON = geoJSON[:-3] + ' '
+    geoJSON += ']}'
 
     # print some info
-    print('Number of invalid properties: {}'.format(n_properties - count_extracted_properties))
+    print('\nNumber of invalid properties: {}'.format(n_properties - count_extracted_properties))
     print('Total properties extracted: {}'.format(count_extracted_properties))
 
-    with open('properties.geojson', 'w') as output_file:
+    with open(os.path.join(settings.DATAFOLDER, settings.GEOJSON_FILENAME), 'w') as output_file:
         output_file.write(geoJSON)
+
+    # Also write the zipcode file 
+    # But first create some nices strings for printing! i.e. '€455.200' instead of 455200
+    for key, item in zipcode_data.items():
+        zipcode_data[key]['Price'] = int(zipcode_data[key]['Price']/zipcode_data[key]['n_properties'])
+        zipcode_data[key]['LivingArea'] = int(zipcode_data[key]['LivingArea']/zipcode_data[key]['n_properties'])
+        zipcode_data[key]['PriceM2'] = int(zipcode_data[key]['Price']/zipcode_data[key]['LivingArea'])
+        zipcode_data[key]['LotSize'] = int(zipcode_data[key]['LotSize']/zipcode_data[key]['n_properties'])
+        zipcode_data[key]['BuildYear'] = int(zipcode_data[key]['BuildYear']/zipcode_data[key]['n_properties'])
+        zipcode_data[key]['PPrice'] = '€{:,}'.format(zipcode_data[key]['Price'])
+        zipcode_data[key]['PPriceM2'] = '€{:,}'.format(zipcode_data[key]['PriceM2'])
+
+    with open(os.path.join(settings.DATAFOLDER,settings.ZIPCODE_FOLDER, settings.ZIPCODE_FILENAME), 'w') as output_file:
+
+        output_file.write(json.dumps(zipcode_data, sort_keys=True))

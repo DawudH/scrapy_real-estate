@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{86c402f4-81fb-4f68-b54f-ef7ec3614315}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>test_plot.py</StartupFile>
+    <StartupFile>convert_zipcode_areas.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -21,11 +21,26 @@
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="convert_zipcode_areas.py" />
+    <Compile Include="geoconversions\kml2geojson.py" />
+    <Compile Include="geoconversions\LatLonConversions.py" />
+    <Compile Include="geoconversions\__init__.py" />
+    <Compile Include="plot_property_as_circles.py" />
     <Compile Include="rawdatageojson.py" />
-    <Compile Include="test_plot.py" />
+    <Compile Include="settings.py" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="{9a7a9026-48c1-4688-9d5d-e5699d47d074}\3.5" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="geoconversions\" />
+    <Folder Include="geoconversions\__pycache__\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="geoconversions\testdata.geojson" />
+    <Content Include="geoconversions\__pycache__\LatLon2WebMercator.cpython-34.pyc" />
+    <Content Include="geoconversions\__pycache__\LatLonConversions.cpython-34.pyc" />
+    <Content Include="geoconversions\__pycache__\__init__.cpython-34.pyc" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />

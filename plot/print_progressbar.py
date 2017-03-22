@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import sys
 
 def print_progress (iteration, total, prefix = '', suffix = '', decimals = 1, barLength = 100):
