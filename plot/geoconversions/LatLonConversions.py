@@ -49,12 +49,24 @@ def __coordinates2WebMercator(geomtype,coordinates):
 
 
 
-def geojson2WebMercator(geojson_file, outputfile):
+def geojson2WebMercator(geojson_file, outputfile,zipcode_data_file=None):
     """ This file convers the coordinates in a geojson file from latlon to web mercator
     And saves it into a new geojson file 
     INPUT:
             - geojson_file: the input file location (including extension)
             - outputfile: the output file location (including extension)
+            - zipcode_data_file: (optional) File location of additional zipcode data 
+                --> NOTE this Only works if the original file has a propertie called 'PC4CODE' <--
+                            The extra zipcode data that will be added to the properties of the geojson file
+                            It should be a json file with format:
+                                   {
+                                       "1234": {                               <-- The 4 digit zipcode is the key of this entry
+                                                   "n_properties": 123         <-- number of properties that this data is based on
+                                                   "data_1": value             <-- All the averaged values will come here
+                                               },
+                                       /* More zipcodes here */
+                                   }
+
 
     NOTE: This function is specifically made for conversion of the zipcode data of the netherlands
             In no way is this applyable to any geojson file..
@@ -64,7 +76,10 @@ def geojson2WebMercator(geojson_file, outputfile):
     with open(geojson_file) as f:
         data = json.load(f)
     
-    
+    # OPTIONALLY open the zipcode_data_file
+    if zipcode_data_file:
+        with open(zipcode_data_file) as f:
+            zipcode_data = json.load(f)
 
     # GeoJSON format is like:
     #   {
@@ -105,6 +120,29 @@ def geojson2WebMercator(geojson_file, outputfile):
 
             # Now its not some weird nested this (or not as weirdly nested haha)
             feature['geometry']['coordinates'] = __coordinates2WebMercator(geomtype,feature['geometry']['coordinates'])
+
+
+        # OPTIONAL: add the optional zipcode data:
+        if zipcode_data and 'PC4CODE' in feature['properties'].keys():
+
+            # Check if zipcode exists in data
+            if feature['properties']['PC4CODE'] in zipcode_data.keys():
+                # It does!
+                properties = zipcode_data[feature['properties']['PC4CODE']]
+
+            else: 
+                # No data for this zipcode..
+                # For all properties fill in zero!
+                properties = {key: 0 for key in list(list(zipcode_data.values())[0].keys())}
+
+            # Add the PC4CODE
+            properties['PC4CODE'] = feature['properties']['PC4CODE']
+
+            # Overwrite all the other properties
+            feature['properties'] = properties
+
+
+            
            
 
     # Now the conversion is done
@@ -114,7 +152,4 @@ def geojson2WebMercator(geojson_file, outputfile):
         output_f.write(jsonstring)
 
 
-
-if __name__ == '__main__':
-    geojson2WebMercator('geoconversions\\testdata.geojson','testoutput.geojson')
 
